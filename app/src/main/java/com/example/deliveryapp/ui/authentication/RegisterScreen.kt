@@ -156,7 +156,7 @@ fun Register(navController: NavController, modifier: Modifier = Modifier){
             verticalArrangement = Arrangement.Top
         ) {
             textFiledAuthentication(value = form.name,
-                onValueChange = { form = form.copy(name =  it) },
+                onValueChange = { form = form.copy(name = it) },
                 label = "Tên",
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next

@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -157,7 +158,7 @@ fun LeadingBasicButton(
         Text(
             text = text,
             style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium),
-            modifier = Modifier.padding(vertical = 10.dp)
+            modifier = Modifier.padding(vertical = 7.dp)
         )
     }
 }

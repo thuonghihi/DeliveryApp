@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.deliveryapp"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.play.services.location)
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation(libs.androidx.compose.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -27,23 +27,23 @@ import com.example.deliveryapp.ui.authentication.RegisterScreen
 import com.example.deliveryapp.ui.authentication.WelcomeScreen
 import com.example.deliveryapp.ui.theme.DeliveryAppTheme
 import androidx.compose.material3.Surface
+import com.example.deliveryapp.ui.customer.CustomerAddOrderInformationScreen
 import com.example.deliveryapp.ui.customer.CustomerAddReceiverPointScreen
 import com.example.deliveryapp.ui.customer.CustomerAddSenderPointScreen
 //import com.example.deliveryapp.ui.customer.CustomerAddReceiverPointScreen
 //import com.example.deliveryapp.ui.customer.CustomerAddSenderPointScreen
 import com.example.deliveryapp.ui.customer.CustomerHomePageScreenRoute
 import com.example.deliveryapp.ui.customer.CustomerHomepageScreen
-import com.example.deliveryapp.ui.customer.CustomerOrderTrackingDetailScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Surface(modifier = Modifier.fillMaxSize()) {
-//               MainApp()
+            DeliveryAppTheme {
+                MainApp()
 //                Text("abc vcl")
-                LoginScreen(navController = rememberNavController())
+//                WelcomeScreen(navController = rememberNavController())
             }
         }
     }
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
 fun MainApp(){
     val navController = rememberNavController()
     DeliveryAppTheme {
-        NavHost(navController = navController, startDestination = "welcome"){
+        NavHost(navController = navController, startDestination = "customerAddOrderInformation"){
             composable("welcome"){ WelcomeScreen(navController) }
 
             composable("login?numberPhone={numberPhone}",
@@ -86,7 +86,9 @@ fun MainApp(){
             composable("customerAddSenderPoint"){ CustomerAddSenderPointScreen(navController) }
 
             composable("customerAddReceiverPoint"){ CustomerAddReceiverPointScreen(navController) }
-            composable("orderTrackingDetail"){ CustomerOrderTrackingDetailScreen(navController) }
+            composable("customerAddOrderInformation"){ CustomerAddOrderInformationScreen(navController) }
+
+          //  composable("orderTrackingDetail"){ CustomerOrderTrackingDetailScreen(navController) }
 
 //            composable("productDetail/{productId}",
 //                arguments = listOf(

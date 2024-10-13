@@ -44,16 +44,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.text.font.FontWeight
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.maps.android.compose.CameraPositionState
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 fun CustomerHomePageScreenRoute(customerID: String): String{
@@ -70,7 +80,7 @@ data class orderTracking(
 
 val orderTrackingItems = listOf(
     orderTracking("123", "Hà Nội", "Quảng Bình", "12/10", "Đã đến kho gửi"),
-    orderTracking("123", "Hà Nội", "Quảng Bình", "12/10", "Đã đến kho gửi")
+    orderTracking("1234", "Hà Nội", "Quảng Bình", "12/10", "Đã đến kho gửi")
 )
 
 @Composable
@@ -91,26 +101,53 @@ fun CustomerHomepage(navController: NavController, customerID: String){
         mutableStateOf(true)
     }
     TopBarWithNavigationDrawer(navController = navController, customerID = customerID, bottomBar = { BottomBar() }) { modifier ->
-        if(hasOrderTracking) CustomerHomepageWithOrder(navController = navController, modifier = modifier)
+        if(hasOrderTracking) CustomerHomepageWithOrder(navController = navController, customerID = customerID, modifier = modifier)
         else CustomerHomepageWhitoutOrder(navController = navController, modifier = modifier)
     }
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerHomepageWithOrder(navController: NavController, modifier: Modifier = Modifier){
-    Column(verticalArrangement = Arrangement.Top,
-        modifier = modifier.fillMaxSize()){
+fun CustomerHomepageWithOrder(navController: NavController, customerID: String, modifier: Modifier = Modifier) {
+    var isBottomSheetVisible by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf<orderTracking?>(null) } // Thêm biến để giữ đối tượng được chọn
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    Column(
+        verticalArrangement = Arrangement.Top,
+        modifier = modifier.fillMaxSize()
+    ) {
         AddAddress(navController = navController, modifier = Modifier)
         LazyColumn(
             modifier = Modifier.fillMaxWidth().padding(20.dp).weight(1f),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(orderTrackingItems) { item->
-                CustomerHomepageItemWithOrder(item, modifier = Modifier){
-
+            items(orderTrackingItems) { item ->
+                CustomerHomepageItemWithOrder(item, modifier = Modifier) {
+                    selectedItem = item
+                    isBottomSheetVisible = true
                 }
             }
+        }
+    }
+
+    if (isBottomSheetVisible && selectedItem != null) {
+        OrderTrackingDetailSheet(
+            bottomSheetState = bottomSheetState,
+            orderTrackingItem = selectedItem!!,
+            customerID = customerID
+        ){
+            isBottomSheetVisible = false
+            selectedItem = null
+        }
+    }
+
+    LaunchedEffect(isBottomSheetVisible) {
+        if (isBottomSheetVisible) {
+            bottomSheetState.show()
+        } else {
+            bottomSheetState.hide()
         }
     }
 }
@@ -134,9 +171,6 @@ fun CustomerHomepageItemWithOrder(orderTrackingItem: orderTracking, modifier: Mo
                 style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
                 modifier = Modifier.padding(vertical = 15.dp)
             )
-//            IconButton(onClick = {}) {
-//                Image(painter = painterResource(R.drawable.detail_ordertracking), contentDescription = "", Modifier.size(25.dp))
-//            }
         }
 
         Divider(color = Color.LightGray, thickness = 0.3.dp)
@@ -211,7 +245,7 @@ fun OrderTrackingItemColumn(
 @Composable
 fun CustomerHomepageWhitoutOrder(navController: NavController, modifier: Modifier){
     Box{
-        //MapScreen(modifier = modifier)
+        MapScreen(modifier = modifier)
         AddAddress(navController = navController, modifier = modifier)
     }
 }
@@ -298,6 +332,135 @@ fun AddAddressItem(text: String, icon: Int, placeHolder: String, onClick: () -> 
         }
     )
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OrderTrackingDetailSheet(bottomSheetState: SheetState, customerID: String, orderTrackingItem: orderTracking, hideSheet: () -> Unit){
+    val scope = rememberCoroutineScope()
+    ModalBottomSheet(
+        sheetState = bottomSheetState,
+        onDismissRequest = {
+            scope.launch {
+                bottomSheetState.hide()
+            }.invokeOnCompletion {
+                hideSheet()
+            }
+        }
+    ) {
+        BottomSheetContent(orderTrackingItem = orderTrackingItem, customerID = customerID)
+    }
+}
+
+@Composable
+fun BottomSheetContent(orderTrackingItem: orderTracking, customerID: String){
+    Column(
+        modifier = Modifier.fillMaxSize().padding(14.dp)
+    ) {
+        Text("Theo dõi đơn hàng",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium)
+        Text(
+            text = "Mã ĐH: ${orderTrackingItem.id}",
+            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
+            modifier = Modifier.padding(vertical = 15.dp)
+        )
+
+        Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(30.dp)).weight(1f).padding(20.dp)) {
+            MapScreen(modifier = Modifier.fillMaxWidth().fillMaxSize())
+        }
+        Row(horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp)) {
+            OrderTrackingDetailItemColumn(
+                iconResId = R.drawable.box_out,
+                title = "Địa chỉ gửi",
+                content = orderTrackingItem.sender
+            )
+            //    Spacer(modifier = Modifier.weight(1f))
+            OrderTrackingDetailItemColumn(
+                iconResId = R.drawable.box_in,
+                title = "Địa chỉ nhận",
+                content = orderTrackingItem.receiver
+            )
+        }
+        Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(color = Color.LightGray))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            OrderTrackingDetailItemColumn(
+                title = "Khách hàng",
+                content = customerID
+            )
+            OrderTrackingDetailItemColumn(
+                title = "Trọng lượng",
+                content = "1.5kg"
+            )
+            OrderTrackingDetailItemColumn(
+                title = "Chi phí",
+                content = "123"
+            )
+        }
+        Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(color = Color.LightGray))
+
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Image(painter = painterResource(R.drawable.shipper_welcome), "",
+                    modifier = Modifier.size(35.dp))
+                Column {
+                    Text("Duan ml",
+                        style = TextStyle(fontSize = 18.sp))
+                    Text("Tài xế",
+                        style = TextStyle(fontSize = 14.sp,
+                            fontWeight = FontWeight.Light))
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.MailOutline, "")
+                Icon(Icons.Default.Phone, "")
+            }
+        }
+    }
+
+}
+
+@Composable
+fun OrderTrackingDetailItemColumn(
+    modifier: Modifier = Modifier, // Ensure this parameter is included
+    iconResId: Int? = null,
+    title: String,
+    content: String
+) {
+    Row(modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically) {
+        iconResId?.let {
+            Image(
+                painter = painterResource(id = it),
+                contentDescription = title,
+                modifier = Modifier.size(25.dp)
+            )
+        }
+        Column {
+            Spacer(modifier = Modifier.width(4.dp)) // Add spacing between icon and text
+            Text(title, style = TextStyle(
+                fontSize = 13.sp,
+                color = Color.LightGray
+            ), modifier = Modifier.padding(start = 10.dp, bottom = 5.dp))
+            Text(content, style = TextStyle(
+                fontSize = 16.sp,
+            ), modifier = Modifier.padding(start = 10.dp))
+        }
+    }
+}
+
+
 
 
 

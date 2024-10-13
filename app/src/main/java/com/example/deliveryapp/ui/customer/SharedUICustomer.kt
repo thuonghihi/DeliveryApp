@@ -1,6 +1,7 @@
 package com.example.deliveryapp.ui.customer
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import android.util.Log
@@ -408,12 +409,10 @@ fun MapScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
-    // Register permission request
     val locationPermissionRequest = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission granted, get location
             getCurrentLocation(fusedLocationClient, cameraPositionState) { location ->
                 currentLocation = location
             }
@@ -422,18 +421,15 @@ fun MapScreen(modifier: Modifier = Modifier) {
         }
     }
 
- //    Check permission when the screen is launched
     LaunchedEffect(Unit) {
         when {
             ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
-                // Permission granted, get location
                 getCurrentLocation(fusedLocationClient, cameraPositionState) { location ->
                     currentLocation = location
                 }
             }
             else -> {
-                // Request permission
-              //  locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
@@ -459,6 +455,7 @@ fun MapScreen(modifier: Modifier = Modifier) {
 }
 
 // Function to get current location
+@SuppressLint("MissingPermission")
 fun getCurrentLocation(
     fusedLocationClient: FusedLocationProviderClient,
     cameraPositionState: CameraPositionState,
@@ -483,7 +480,7 @@ fun getCurrentLocation(
 @Composable
 fun CustomerAddPointScreen(placeHolder: String, iconResiD: Int, modifier: Modifier, value: String, onValueChange: (String) -> Unit){
     Box(modifier = modifier) {
-        //MapScreen(modifier = modifier)
+        MapScreen(modifier = modifier)
         Surface(
             shadowElevation = 10.dp,
             shape = MaterialTheme.shapes.small, // Hình dạng cho Surface
@@ -508,5 +505,6 @@ fun CustomerAddPointScreen(placeHolder: String, iconResiD: Int, modifier: Modifi
         }
     }
 }
+
 
 

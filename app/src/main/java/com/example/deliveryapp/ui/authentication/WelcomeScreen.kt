@@ -70,24 +70,10 @@ fun WelcomeScreen(navController: NavController) {
                 .fillMaxWidth(),
             style = TextStyle(fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.Gray)
         )
-        Log.d("button", "welcome")
-        LeadingBasicButton("test", true) {
-            Log.d("omg????", "omggggg")
-        }
-        Button(
-            onClick = { Log.d("heeee", "jfbd") }
-        ) {
-            Text("abc")
-        }
         LeadingBasicButton("Bắt đầu", true) {
             Log.d("before", "log")
             navController.navigate(LoginScreenRoute())
             Log.d("after", "log")
-        }
-        Log.d("button", "welcome")
-
-        LeadingBasicButton("test", true) {
-            Log.d("omg????", "omggggg")
         }
     }
 }

@@ -99,27 +99,33 @@ fun PreviewLogin(){
 
 @Composable
 fun Login(numberPhone: String? = null, modifier: Modifier = Modifier, navController: NavController){
+    var passwordText by remember {
+        mutableStateOf("")
+    }
+
+    var phoneText by remember {
+        mutableStateOf(if (numberPhone.isNullOrEmpty()) "" else numberPhone)
+    }
+
+    var showPassword by remember {
+        mutableStateOf(false)
+    }
+
+    val phoneRegex = "^0\\d{9}$".toRegex()
+
+    val enableButton by remember {
+        derivedStateOf { passwordText.length > 0 && phoneRegex.matches(phoneText)}
+    }
+    val phoneTextLength by remember {
+        derivedStateOf { phoneText.length }
+    }
+
     Column(
         modifier = modifier
             .padding(20.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.Top
     ) {
-        var phoneNumberText by remember {
-            mutableStateOf("")
-        }
-        var passwordText by remember {
-            mutableStateOf("")
-        }
-        var showPassword by remember {
-            mutableStateOf(false)
-        }
-
-        val phoneRegex = "^0\\d{9}$".toRegex()
-
-        val enableButton by remember {
-            derivedStateOf { passwordText.length > 0 && phoneRegex.matches(phoneNumberText)}
-        }
         
         Text("Đăng nhập",
             modifier = Modifier
@@ -130,25 +136,19 @@ fun Login(numberPhone: String? = null, modifier: Modifier = Modifier, navControl
                 fontWeight = FontWeight.ExtraBold)
         )
 
-        numberPhone?.let {
-            phoneNumberText = numberPhone
+        if((phoneTextLength == 10 && !phoneRegex.matches(phoneText)) || phoneTextLength > 10 || (phoneTextLength > 0 && phoneText.get(0) != '0')){
+            TextError(text = "Vui lòng nhập số điện thoại hợp lệ")
         }
+
         textFiledAuthentication(
-            value = phoneNumberText,
-            onValueChange = { phoneNumberText = it },
+            value = phoneText,
+            onValueChange = { phoneText = it },
             label = "Số điện thoại",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next
             )
         )
-
-        val phoneTextLength by remember {
-            derivedStateOf { phoneNumberText.length }
-        }
-        if((phoneTextLength == 10 && !phoneRegex.matches(phoneNumberText)) || phoneTextLength > 10 || (phoneTextLength > 0 && phoneNumberText.get(0) != '0')){
-            TextError(text = "Vui lòng nhập số điện thoại hợp lệ")
-        }
 
 
         textFiledAuthentication(
@@ -196,7 +196,7 @@ fun Login(numberPhone: String? = null, modifier: Modifier = Modifier, navControl
 
         LeadingBasicButton(text = "Đăng nhập", enableButton) {
             Log.d("login", "hehe")
-//            navController.navigate(CustomerHomePageScreenRoute("12"))
+            navController.navigate(CustomerHomePageScreenRoute("12"))
         }
 
         Text(text = "hoặc đăng nhập với",
