@@ -2,6 +2,8 @@ package com.example.deliveryapp.ui.authentication
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -67,10 +70,24 @@ fun WelcomeScreen(navController: NavController) {
                 .fillMaxWidth(),
             style = TextStyle(fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.Gray)
         )
-        LeadingBasicButton("Bắt đầu", true){
+        Log.d("button", "welcome")
+        LeadingBasicButton("test", true) {
+            Log.d("omg????", "omggggg")
+        }
+        Button(
+            onClick = { Log.d("heeee", "jfbd") }
+        ) {
+            Text("abc")
+        }
+        LeadingBasicButton("Bắt đầu", true) {
             Log.d("before", "log")
             navController.navigate(LoginScreenRoute())
             Log.d("after", "log")
+        }
+        Log.d("button", "welcome")
+
+        LeadingBasicButton("test", true) {
+            Log.d("omg????", "omggggg")
         }
     }
 }

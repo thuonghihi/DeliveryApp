@@ -27,7 +27,13 @@ import com.example.deliveryapp.ui.authentication.RegisterScreen
 import com.example.deliveryapp.ui.authentication.WelcomeScreen
 import com.example.deliveryapp.ui.theme.DeliveryAppTheme
 import androidx.compose.material3.Surface
+import com.example.deliveryapp.ui.customer.CustomerAddReceiverPointScreen
+import com.example.deliveryapp.ui.customer.CustomerAddSenderPointScreen
+//import com.example.deliveryapp.ui.customer.CustomerAddReceiverPointScreen
+//import com.example.deliveryapp.ui.customer.CustomerAddSenderPointScreen
+import com.example.deliveryapp.ui.customer.CustomerHomePageScreenRoute
 import com.example.deliveryapp.ui.customer.CustomerHomepageScreen
+import com.example.deliveryapp.ui.customer.CustomerOrderTrackingDetailScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +41,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Surface(modifier = Modifier.fillMaxSize()) {
-                MainApp()
+//               MainApp()
+//                Text("abc vcl")
+                LoginScreen(navController = rememberNavController())
             }
         }
     }
@@ -45,7 +53,7 @@ class MainActivity : ComponentActivity() {
 fun MainApp(){
     val navController = rememberNavController()
     DeliveryAppTheme {
-        NavHost(navController = navController, startDestination = "customerHomepage"){
+        NavHost(navController = navController, startDestination = "welcome"){
             composable("welcome"){ WelcomeScreen(navController) }
 
             composable("login?numberPhone={numberPhone}",
@@ -65,7 +73,30 @@ fun MainApp(){
 
             composable("otpScreen"){ OtpScreen(navController) }
 
-            composable("customerHomepage"){ CustomerHomepageScreen(navController) }
+            composable("customerHomepage/{customerID}",
+                arguments = listOf(
+                    navArgument(name = "customerID"){
+                        type = NavType.StringType
+                    })
+                ){ backStackEntry ->
+                val customerID = backStackEntry.arguments?.getString("customerID")
+                requireNotNull(customerID)
+                CustomerHomepageScreen(navController, customerID = customerID) }
+
+            composable("customerAddSenderPoint"){ CustomerAddSenderPointScreen(navController) }
+
+            composable("customerAddReceiverPoint"){ CustomerAddReceiverPointScreen(navController) }
+            composable("orderTrackingDetail"){ CustomerOrderTrackingDetailScreen(navController) }
+
+//            composable("productDetail/{productId}",
+//                arguments = listOf(
+//                    navArgument(name = "productId"){
+//                        type = NavType.StringType
+//                    })
+//            ){backStackEntry ->
+//                val productId = backStackEntry.arguments?.getString("productId")
+//                ProductDetailScreen(navController = navController, productId = productId)
+//            }
 
 //            composable("addressDetail?addressId={addressId}",
 //                arguments = listOf(

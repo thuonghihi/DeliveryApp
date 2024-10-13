@@ -3,7 +3,11 @@ package com.example.deliveryapp.ui.customer
 import android.content.Context
 import android.location.Geocoder
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,10 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,16 +40,25 @@ import androidx.navigation.compose.rememberNavController
 import com.example.deliveryapp.R
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Divider
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.text.font.FontWeight
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import java.util.Locale
+
+fun CustomerHomePageScreenRoute(customerID: String): String{
+    return "customerHomepage/$customerID"
+}
 
 data class orderTracking(
     val id: String,
@@ -60,178 +69,183 @@ data class orderTracking(
 )
 
 val orderTrackingItems = listOf(
+    orderTracking("123", "Hà Nội", "Quảng Bình", "12/10", "Đã đến kho gửi"),
     orderTracking("123", "Hà Nội", "Quảng Bình", "12/10", "Đã đến kho gửi")
 )
 
 @Composable
-fun CustomerHomepageScreen(navController: NavController){
-    CustomerHomepage(navController = navController)
+fun CustomerHomepageScreen(navController: NavController, customerID: String){
+    CustomerHomepage(navController = navController, customerID = customerID)
 }
 
-
-
-@Preview(showSystemUi = true)
+@Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun previewCustomerHomepage(){
-    CustomerHomepageScreen(navController = rememberNavController())
+    CustomerHomepageScreen(navController = rememberNavController(), customerID = "12")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerHomepage(navController: NavController){
-    TopBarWithNavigationDrawer(navController = navController, bottomBar = { BottomBar() }) {modifier ->
-   //     CustomerHomepageWhitoutOrder(modifier = modifier)
-        CustomerHomepageItemWithOrder(orderTrackingItems.get(0), modifier = modifier)
+fun CustomerHomepage(navController: NavController, customerID: String){
+    var hasOrderTracking by remember {
+        mutableStateOf(true)
+    }
+    TopBarWithNavigationDrawer(navController = navController, customerID = customerID, bottomBar = { BottomBar() }) { modifier ->
+        if(hasOrderTracking) CustomerHomepageWithOrder(navController = navController, modifier = modifier)
+        else CustomerHomepageWhitoutOrder(navController = navController, modifier = modifier)
     }
 
 }
 
 @Composable
-fun CustomerHomepageWithOrder(modifier: Modifier = Modifier){
+fun CustomerHomepageWithOrder(navController: NavController, modifier: Modifier = Modifier){
+    Column(verticalArrangement = Arrangement.Top,
+        modifier = modifier.fillMaxSize()){
+        AddAddress(navController = navController, modifier = Modifier)
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().padding(20.dp).weight(1f),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(orderTrackingItems) { item->
+                CustomerHomepageItemWithOrder(item, modifier = Modifier){
 
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun CustomerHomepageItemWithOrder(orderTrackingItem: orderTracking, modifier: Modifier) {
-    Box(
+fun CustomerHomepageItemWithOrder(orderTrackingItem: orderTracking, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
         modifier = modifier
-            .padding(20.dp)
+            .clickable {
+                onClick()
+            }
+            .border(1.dp, color = Color.LightGray)
+            .clip(shape = RoundedCornerShape(10.dp))
+            .padding(top = 10.dp, start = 20.dp, end = 10.dp)
             .fillMaxWidth()
     ) {
-        ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
-            // Define the components
-            val (orderId, senderColumn, expectedDeliveryColumn, receiverColumn, statusColumn) = createRefs()
-            val guideline = createGuidelineFromStart(0.5f) // Create a guideline in the middle
-
-            // Show order ID
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 text = "Mã ĐH: ${orderTrackingItem.id}",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Medium),
-                    modifier = Modifier.constrainAs(orderId) {
-                        top.linkTo(parent.top, margin = 8.dp)
-                        start.linkTo(parent.start)
-                        bottom.linkTo(senderColumn.top)
-                        width = Dimension.fillToConstraints // Fill space until guideline
-                    }
+                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
+                modifier = Modifier.padding(vertical = 15.dp)
             )
+//            IconButton(onClick = {}) {
+//                Image(painter = painterResource(R.drawable.detail_ordertracking), contentDescription = "", Modifier.size(25.dp))
+//            }
+        }
 
-            // Sender address column
-            AddressColumn(
-                iconResId = R.drawable.from_icon,
+        Divider(color = Color.LightGray, thickness = 0.3.dp)
+
+        // Row chứa địa chỉ gửi và dự kiến giao
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+            OrderTrackingItemColumn(
+                iconResId = R.drawable.box_out,
                 title = "Địa chỉ gửi",
                 content = orderTrackingItem.sender,
-                modifier = Modifier.constrainAs(senderColumn) {
-                    top.linkTo(orderId.bottom, margin = 8.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(guideline)
-                    width = Dimension.fillToConstraints // Fill space until guideline
-                }
+                modifier = Modifier.weight(1f)
             )
-
-            // Expected delivery column
-            AddressColumn(
-                iconResId = R.drawable.to_icon,
-                title = "Dự kiến giao thành công",
+            Spacer(modifier = Modifier.width(16.dp))
+            OrderTrackingItemColumn(
+                iconResId = R.drawable.date_icon,
+                title = "Dự kiến giao",
                 content = orderTrackingItem.expectedTime,
-                modifier = Modifier.constrainAs(expectedDeliveryColumn) {
-                    top.linkTo(orderId.bottom, margin = 8.dp)
-                    start.linkTo(guideline) // Start from guideline
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints // Fill space until guideline
-                }
-            )
-
-            // Receiver address column
-            AddressColumn(
-                iconResId = R.drawable.to_icon,
-                title = "Địa chỉ nhận",
-                content = orderTrackingItem.receiver,
-                modifier = Modifier.constrainAs(receiverColumn) {
-                    top.linkTo(senderColumn.bottom, margin = 16.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(guideline)
-                    width = Dimension.fillToConstraints // Fill space until guideline
-                }
-            )
-
-            // Status column
-            AddressColumn(
-                iconResId = R.drawable.to_icon,
-                title = "Trạng thái",
-                content = orderTrackingItem.status,
-                modifier = Modifier.constrainAs(statusColumn) {
-                    top.linkTo(expectedDeliveryColumn.bottom, margin = 16.dp)
-                    start.linkTo(guideline) // Start from guideline
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints // Fill space until guideline
-                }
+                modifier = Modifier.weight(1f)
             )
         }
+
+        // Row chứa địa chỉ nhận và trạng thái
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+            OrderTrackingItemColumn(
+                iconResId = R.drawable.box_in,
+                title = "Địa chỉ nhận",
+                content = orderTrackingItem.receiver,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            OrderTrackingItemColumn(
+                iconResId = R.drawable.status_icon,
+                title = "Trạng thái",
+                content = orderTrackingItem.status,
+                modifier = Modifier.weight(1f).padding(bottom = 5.dp)
+            )
+        }
+
     }
 }
 
 @Composable
-fun AddressColumn(
+fun OrderTrackingItemColumn(
     modifier: Modifier = Modifier, // Ensure this parameter is included
-    iconResId: Int,
+    iconResId: Int? = null,
     title: String,
     content: String
 ) {
-    Column(modifier = modifier) {
-        Row {
-            Icon(painter = painterResource(iconResId), contentDescription = title)
-            Spacer(modifier = Modifier.width(4.dp)) // Add spacing between icon and text
-      //      Text(title, style = )
+    Row(modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically) {
+        iconResId?.let {
+            Image(
+                painter = painterResource(id = it),
+                contentDescription = title,
+                modifier = Modifier.size(20.dp)
+            )
         }
-        Text(content)
+        Column {
+            Spacer(modifier = Modifier.width(4.dp)) // Add spacing between icon and text
+            Text(title, style = TextStyle(
+                fontSize = 11.sp,
+                color = Color.LightGray
+            ), modifier = Modifier.padding(start = 10.dp, bottom = 5.dp))
+            Text(content, style = TextStyle(
+                fontSize = 13.sp,
+            ), modifier = Modifier.padding(start = 10.dp))
+        }
     }
 }
 
 
 @Composable
-fun CustomerHomepageWhitoutOrder(modifier: Modifier){
+fun CustomerHomepageWhitoutOrder(navController: NavController, modifier: Modifier){
     Box{
-        MapScreen()
-        AddAddress(modifier = modifier)
+        //MapScreen(modifier = modifier)
+        AddAddress(navController = navController, modifier = modifier)
     }
 }
 
 
 @Composable
-fun AddAddress(modifier: Modifier = Modifier){
-    var receiptPointText by remember {
-        mutableStateOf("")
-    }
-    var deliveryPointText by remember {
-        mutableStateOf("")
-    }
+fun AddAddress(navController: NavController, modifier: Modifier = Modifier, senderPointText: String? = "", receiverPointText: String? = ""){
     Card(
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp
+            defaultElevation = 6.dp
         ),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
         modifier = modifier.fillMaxWidth()
             .clip(shape = RoundedCornerShape(10.dp))
-            .padding(20.dp)
+            .padding(10.dp)
 
 
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            AddAddressItem(receiptPointText, R.drawable.from_icon, "Điểm lấy hàng") {
-                receiptPointText = it
+            AddAddressItem(if(senderPointText.isNullOrEmpty()) "" else senderPointText, R.drawable.from_icon, "Điểm lấy hàng") {
+                Log.d("send", "takeee")
+                navController.navigate(AddSenderPointScreenRoute())
             }
+
             Spacer(modifier = Modifier.fillMaxWidth()
-                .padding(vertical = 10.dp)
-                .padding(start = 50.dp)
-                .height(1.dp).
-                background(color = Color.LightGray))
-            AddAddressItem(deliveryPointText, R.drawable.to_icon, "Điểm nhận hàng") {
-                deliveryPointText = it
+                .padding(start = 50.dp, top = 5.dp)
+                .height(1.dp)
+                .background(color = Color.LightGray))
+            AddAddressItem(if(receiverPointText.isNullOrEmpty()) "" else receiverPointText, R.drawable.to_icon, "Điểm nhận hàng") {
+                navController.navigate(AddReceiverPointScreenRoute() )
             }
         }
     }
@@ -258,43 +272,33 @@ fun getAddressFromLocation(
 }
 
 @Composable
-fun AddAddressItem(text: String, icon: Int, label: String, onValueChange: (String) -> Unit){
-    var isFocus by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    var sender by remember {
-        mutableStateOf("")
-    }
-
-    OutlinedTextField(value = text,
-        onValueChange = onValueChange,
-        label = {
-            Text(label,
-                style = TextStyle(fontSize = 15.sp)
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .onFocusChanged {
-                isFocus = it.isFocused
-            },
+fun AddAddressItem(text: String, icon: Int, placeHolder: String, onClick: () -> Unit){
+    TextField(value = text,
+        readOnly = true,
+        onValueChange = {},
         textStyle = TextStyle(fontSize = 18.sp),
+        modifier = Modifier.fillMaxWidth()
+            .clickable {
+                onClick()
+            }
+            .padding(top = 5.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            errorBorderColor = Color.Transparent
+            disabledTextColor = Color.Black,
+            disabledBorderColor = Color.Transparent,
+            disabledPlaceholderColor = Color.Gray
         ),
+        placeholder = {
+            Text(placeHolder)
+        },
+        enabled = false,
         leadingIcon = {
-            Icon(painter = painterResource(id = icon),
+            Image(painter = painterResource(id = icon),
                 contentDescription = "",
                 modifier = Modifier.size(20.dp))
-        },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done
-        )
+        }
     )
 }
+
 
 
 

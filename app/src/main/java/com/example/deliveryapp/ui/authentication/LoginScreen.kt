@@ -1,6 +1,7 @@
 package com.example.deliveryapp.ui.authentication
 
 import android.graphics.drawable.Icon
+import android.util.Log
 import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -70,6 +71,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.deliveryapp.R
+import com.example.deliveryapp.ui.customer.CustomerHomePageScreenRoute
 
 fun LoginScreenRoute(numberPhone: String? = null): String{
     return if (numberPhone.isNullOrEmpty()) "login" else "login?numberPhone=$numberPhone"
@@ -96,7 +98,7 @@ fun PreviewLogin(){
 //}
 
 @Composable
-fun Login(numberPhone: String? = null,modifier: Modifier = Modifier, navController: NavController){
+fun Login(numberPhone: String? = null, modifier: Modifier = Modifier, navController: NavController){
     Column(
         modifier = modifier
             .padding(20.dp)
@@ -193,6 +195,8 @@ fun Login(numberPhone: String? = null,modifier: Modifier = Modifier, navControll
         }
 
         LeadingBasicButton(text = "Đăng nhập", enableButton) {
+            Log.d("login", "hehe")
+//            navController.navigate(CustomerHomePageScreenRoute("12"))
         }
 
         Text(text = "hoặc đăng nhập với",

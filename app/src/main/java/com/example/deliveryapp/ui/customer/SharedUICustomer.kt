@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.util.Log
 import android.widget.ImageButton
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -36,19 +37,25 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -84,6 +91,8 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 data class NavDrawerItem(
@@ -163,15 +172,23 @@ val itemBottoms = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarWithNavigationDrawer(navController: NavController, bottomBar: @Composable () -> Unit? = {}, content: @Composable (modifier: Modifier) -> Unit?){
+fun TopBarWithNavigationDrawer(navController: NavController, customerID: String, modalBottomSheet: @Composable () -> Unit? = {}, bottomBar: @Composable () -> Unit? = {}, content: @Composable (modifier: Modifier) -> Unit?){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(-1)
     }
     val scope = rememberCoroutineScope()
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch {
+            drawerState.close()
+        }
+    }
     ModalNavigationDrawer(
         drawerContent = {
-        ModalDrawerSheet {
+        ModalDrawerSheet(
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -190,7 +207,7 @@ fun TopBarWithNavigationDrawer(navController: NavController, bottomBar: @Composa
                         .clip(shape = CircleShape))
 
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "Chào Thương",
+                Text(text = "Chào $customerID",
                     style = TextStyle(fontSize = 20.sp,
                         fontWeight = FontWeight.Medium))
             }
@@ -256,46 +273,67 @@ fun TopBarWithNavigationDrawer(navController: NavController, bottomBar: @Composa
     },
         drawerState = drawerState) {
         Scaffold (
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                        actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    title = { Text(text = "") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch {
-                                drawerState.open()
-                            }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { /* TODO: Thêm hành động cho menu */ },
-                            modifier = Modifier
-                                .size(80.dp)
-                                .padding(end = 5.dp)) {
-                            BadgedBox(badge = {
-                                Badge{
-                                    Text(text = "12")
-                                }
-                            }) {
-                                Icon(
-                                    Icons.Default.Notifications, contentDescription = "",
-                                    modifier = Modifier.size(27.dp))
-                            }
-                        }
-                    }
-                )
+            topBar = { TopBar(
+                navigationIcon = Icons.Default.Menu,
+                drawerState = drawerState) { }
             },
             bottomBar = { bottomBar() },
         ) { innerPadding ->
             content(modifier = Modifier.padding(innerPadding))
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(title: String? = null, navigationIcon: ImageVector, drawerState: DrawerState? = null, onClick: () -> Unit){
+    val scope = rememberCoroutineScope()
+    TopAppBar(
+        colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+        ),
+        title = {
+            if (title != null) {
+                Text(text = title, style = TextStyle(fontSize = 19.sp))
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = {
+//                scope.launch {
+//                    drawerState.open()
+//                }
+                drawerState?.let {
+                    // Nếu drawerState khác null, mở Drawer
+                    scope.launch {
+                        drawerState.open()
+                    }
+                } ?: run {
+                    // Nếu không có drawerState, thực hiện onClick() thông thường
+                    onClick()
+                }
+            }) {
+                Icon(navigationIcon, contentDescription = "")
+            }
+        },
+        actions = {
+            IconButton(onClick = { /* TODO: Thêm hành động cho menu */ },
+                modifier = Modifier
+                    .size(80.dp)
+                    .padding(end = 5.dp)) {
+                BadgedBox(badge = {
+                    Badge{
+                        Text(text = "12")
+                    }
+                }) {
+                    Icon(
+                        Icons.Default.Notifications, contentDescription = "",
+                        modifier = Modifier.size(27.dp))
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -361,7 +399,7 @@ fun CustomDrawerItem(item: NavDrawerItem, selected: Boolean,  onClick: () -> Uni
 }
 
 @Composable
-fun MapScreen() {
+fun MapScreen(modifier: Modifier = Modifier) {
     var currentLocation by remember { mutableStateOf<LatLng?>(null) }
     val defaultLocation = LatLng(20.0, 105.0)
     val cameraPositionState = rememberCameraPositionState {
@@ -384,7 +422,7 @@ fun MapScreen() {
         }
     }
 
-    // Check permission when the screen is launched
+ //    Check permission when the screen is launched
     LaunchedEffect(Unit) {
         when {
             ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
@@ -395,15 +433,15 @@ fun MapScreen() {
             }
             else -> {
                 // Request permission
-                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+              //  locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier) {
         // Map
         GoogleMap(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
         ) {
             // Show marker at current location if available
@@ -416,25 +454,7 @@ fun MapScreen() {
             }
         }
 
-        // Zoom control buttons
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(onClick = {
-                cameraPositionState.move(CameraUpdateFactory.zoomOut())
-            }) {
-                Text("Zoom Out")
-            }
 
-            Button(onClick = {
-                cameraPositionState.move(CameraUpdateFactory.zoomIn())
-            }) {
-                Text("Zoom In")
-            }
-        }
     }
 }
 
@@ -458,3 +478,35 @@ fun getCurrentLocation(
         Log.e("MapScreen", "Unable to get location: ${e.message}")
     }
 }
+
+
+@Composable
+fun CustomerAddPointScreen(placeHolder: String, iconResiD: Int, modifier: Modifier, value: String, onValueChange: (String) -> Unit){
+    Box(modifier = modifier) {
+        //MapScreen(modifier = modifier)
+        Surface(
+            shadowElevation = 10.dp,
+            shape = MaterialTheme.shapes.small, // Hình dạng cho Surface
+            modifier = Modifier.fillMaxWidth().padding(10.dp) // Chiếm hết chiều rộng
+        ) {
+            TextField(
+                value = value,
+                onValueChange = onValueChange,
+                leadingIcon = {
+                    Image(painter = painterResource(iconResiD), "", Modifier.size(25.dp))
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF3569CC),
+                    unfocusedLabelColor = Color.LightGray
+                ),
+                placeholder = {
+                    Text(placeHolder)
+                },
+                textStyle = TextStyle(fontSize = 14.sp),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+
