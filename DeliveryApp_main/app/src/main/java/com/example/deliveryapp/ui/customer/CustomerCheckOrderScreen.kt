@@ -43,21 +43,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.deliveryapp.R
+import com.example.deliveryapp.data.models.Order
+import com.example.deliveryapp.data.repositories.OrderRepository
 import com.example.deliveryapp.ui.authentication.LeadingBasicButton
+import com.example.deliveryapp.viewmodels.OrderViewModel
+import com.google.gson.Gson
 
-fun CheckOrderScreenRoute(pickupLocation: String, deliveryLocation: String): String {
-    return "checkOrder/$pickupLocation/$deliveryLocation"
+fun CheckOrderScreenRoute(order: Order): String {
+    val gson = Gson()
+    return "checkOrder/${gson.toJson(order)}"
 }
 
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun previewCustomerCheckOrder(){
-    CustomerCheckOrderScreen(navController = rememberNavController(), "Hà Nội", "Quảng Bình")
-}
+//@Preview(showSystemUi = true, showBackground = true)
+//@Composable
+//fun previewCustomerCheckOrder(){
+//    CustomerCheckOrderScreen(navController = rememberNavController(), "Hà Nội", "Quảng Bình")
+//}
 
 @Composable
-fun CustomerCheckOrderScreen(navController: NavController, pickupLocation: String, deliveryLocation: String){
+fun CustomerCheckOrderScreen(navController: NavController, order: Order){
     var hasOrderInformation by remember{
         mutableStateOf(false)
     }
@@ -69,13 +74,15 @@ fun CustomerCheckOrderScreen(navController: NavController, pickupLocation: Strin
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding).background(color = Color(0xFFF7F7F7)),
             verticalArrangement = Arrangement.SpaceBetween
-        ) { CustomerCheckOrderInformation(navController = navController, "20.3km", "20.000đ", pickupLocation, deliveryLocation)
+        ) { CustomerCheckOrderInformation(navController = navController, "20.3km", "20.000đ", order.pickupAddress ?: "", order.deliveryAddress ?: "")
         }
     }
 }
 
 @Composable
 fun CustomerCheckOrderInformation(navController: NavController, distance: String, previewPrice: String, pickupLocation: String, deliveryLocation: String){
+    val orderRepository = OrderRepository()
+    val orderViewModel = OrderViewModel(orderRepository)
     Column(modifier = Modifier.fillMaxWidth()
         .background(color = Color.White)
         .fillMaxSize()
@@ -150,6 +157,8 @@ fun CustomerCheckOrderInformation(navController: NavController, distance: String
             var isLoading by remember { mutableStateOf(false) }
             LeadingBasicButton("Đặt giao hàng") {
                 isLoading = true
+//                orderViewModel.addOrder(order)
+
             }
             LoadingModal(isLoading) { isLoading = false }
         }

@@ -84,7 +84,7 @@ fun Otp(navController: NavController, phoneNumber: String, graphViewModel: Graph
 
     Column(
         modifier = modifier
-            .padding(horizontal = 19.dp)
+            .padding(horizontal = 20.dp)
             .fillMaxWidth()
     ) {
 

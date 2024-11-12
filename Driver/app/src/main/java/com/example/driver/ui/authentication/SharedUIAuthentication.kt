@@ -158,7 +158,7 @@ fun LeadingBasicButton(
     ) {
         Text(
             text = text,
-            style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary),
+            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary),
             modifier = Modifier.padding(vertical = 7.dp)
         )
     }

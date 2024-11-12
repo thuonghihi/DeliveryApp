@@ -30,6 +30,7 @@ class AuthRepository {
                 Pair(false, null)
             }
         } catch (e: Exception) {
+            Log.d("cattt", e.message + "")
             Pair(false, null)
         }
     }

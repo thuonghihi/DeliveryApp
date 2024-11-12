@@ -25,6 +25,7 @@ class AuthRepository {
     private var verificationId: String = ""
 
     suspend fun checkPhoneNumberExists(phoneNumber: String): Boolean {
+        Log.d("okkkk", firebaseAuth.toString())
         return suspendCancellableCoroutine { continuation ->
             driverRef.orderByChild("phone").equalTo(phoneNumber).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {

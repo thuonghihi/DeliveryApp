@@ -56,7 +56,11 @@ val notificationLists = mutableStateListOf(
     Notification("15:30", "29/10/2024", "Go gửi bạn", "Bạn đã hoàn thành đơn thứ 10, nhận thưởng ngay thôi", "readed"),
 )
 
-//@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun preview(){
+    DriverNotificationScreen("1")
+}
 @Composable
 fun DriverNotificationScreen(diverId: String) {
     Column {
@@ -83,7 +87,7 @@ fun NotificationItem(notification: Notification, onClick: () -> Unit){
         .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-        Column (Modifier.weight(1f)) {
+        Column(Modifier.weight(1f)) {
             Row(
                 Modifier.padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -119,7 +123,7 @@ fun NotificationItem(notification: Notification, onClick: () -> Unit){
         if(notification.status == "unread"){
             Badge(
                 containerColor = Color.Red,
-                modifier = Modifier.size(10.dp).padding(start = 10.dp)
+                modifier = Modifier.size(8.dp)
             )
         }
     }

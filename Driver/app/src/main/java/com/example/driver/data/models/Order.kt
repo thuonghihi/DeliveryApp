@@ -1,10 +1,11 @@
-package com.example.deliveryapp.data.models
+package com.example.driver.data.models
 
 data class Order(
     var customer: String? = null,
     var deliveryAddress: String? = null,
     var deliveryLocation: Location? = null,
     var driver: String? = null,
+    var orderId: String? = null,
     var orderIdShow: String? = null,
     var paymentMethod: String? = null,
     var pickupAddress: String? = null,
@@ -26,6 +27,7 @@ data class Order(
         deliveryAddress = null,
         deliveryLocation = null,
         driver = null,
+        orderId = null,
         orderIdShow = null,
         paymentMethod = null,
         pickupAddress = null,

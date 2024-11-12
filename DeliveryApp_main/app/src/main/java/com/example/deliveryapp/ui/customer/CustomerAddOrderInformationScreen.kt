@@ -78,6 +78,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.deliveryapp.R
+import com.example.deliveryapp.data.models.Location
 import com.example.deliveryapp.data.models.Order
 import com.example.deliveryapp.data.repositories.CustomerRepository
 import com.example.deliveryapp.data.repositories.OrderRepository
@@ -85,6 +86,9 @@ import com.example.deliveryapp.ui.authentication.Login
 import com.example.deliveryapp.ui.authentication.textFiledAuthentication
 import com.example.deliveryapp.viewmodels.CustomerViewModel
 import com.example.deliveryapp.viewmodels.OrderViewModel
+import com.google.gson.Gson
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 fun AddOrderInfoScreenRoute(): String{
@@ -134,8 +138,6 @@ fun AddOrderInfo(navController: NavController, customerID: String){
     val productCategoryList = listOf("Thực phẩm", "Dễ vỡ", "Quần áo", "Khác")
     val existingStrings = mutableSetOf<String>()
 
-    val orderRepository = OrderRepository()
-    val orderViewModel = OrderViewModel(orderRepository)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -275,21 +277,29 @@ fun AddOrderInfo(navController: NavController, customerID: String){
                 }
             }
             LeadingBasicButton("Tiếp tục", enablebtn) {
-                navController.navigate(CheckOrderScreenRoute(formSenderAddInfo.address, formReceiverAddInfo.address))
                 var order = Order(
-                    orderidshow = generateUniqueRandomString(existingStrings),
-                    pickupLocation = formSenderAddInfo.address,
-                    deliveryLocation = formReceiverAddInfo.address,
+                    orderIdShow = generateUniqueRandomString(existingStrings),
+                    pickupAddress = formSenderAddInfo.address,
+                    pickupLocation = Location(1.0, 1.0),
+                    deliveryLocation = Location(1.1, 1.0),
+                    deliveryAddress = formReceiverAddInfo.address,
                     customer = customerID,
                     driver = "",
-                    status = "Tạm thời",
+                    status = "temporary",
                     timeStamp = System.currentTimeMillis().toString(),
                     voucher = "",
                     totalAmount = "",
                     paymentMethod = "",
-                    weight = productMassList.get(filterChipMassIsSelect).toString()
+                    weight = productMassList.get(filterChipMassIsSelect).toString(),
+                    senderPhone = formSenderAddInfo.phoneNumber.toString(),
+                    receiverPhone = formReceiverAddInfo.phoneNumber.toString(),
+                    senderName = formSenderAddInfo.name.toString(),
+                    receiverName = formReceiverAddInfo.name.toString(),
+                    paymentRecipient = false,
+                    note = orderNote
                 )
-                orderViewModel.addOrder(order)
+                navController.navigate(CheckOrderScreenRoute(order))
+
             }
         }
     }
@@ -476,6 +486,7 @@ fun generateUniqueRandomString(existingStrings: MutableSet<String>): String {
     existingStrings.add(newString) // Lưu chuỗi đã tạo vào tập hợp để tránh trùng
     return "GO"+newString
 }
+
 
 
 

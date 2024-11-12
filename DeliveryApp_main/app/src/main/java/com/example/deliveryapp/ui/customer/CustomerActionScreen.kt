@@ -129,7 +129,7 @@ fun ActionItem(order: Order){
                         Image(
                             painterResource(R.drawable.dot_blue), "",
                             modifier = Modifier.size(16.dp).padding(end = 5.dp))
-                        Text(order.pickupLocation ?: "",
+                        Text(order.pickupAddress ?: "",
                             style = TextStyle(),
 //                        modifier = Modifier.
                             maxLines = 1,
@@ -140,7 +140,7 @@ fun ActionItem(order: Order){
                         Image(
                             painterResource(R.drawable.dot_orange), "",
                             modifier = Modifier.size(16.dp).padding(end = 5.dp))
-                        Text(order.deliveryLocation ?: "",
+                        Text(order.deliveryAddress ?: "",
                             style = TextStyle(),
 //                        modifier = Modifier.
                             maxLines = 1,

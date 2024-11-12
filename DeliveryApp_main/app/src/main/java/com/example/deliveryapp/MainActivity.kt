@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.deliveryapp.data.models.Order
 import com.example.deliveryapp.data.repositories.OrderRepository
 import com.example.deliveryapp.ui.customer.CustomerActionScreen
 import com.example.deliveryapp.ui.customer.CustomerAddOrderInformationScreen
@@ -35,6 +36,8 @@ import com.example.deliveryapp.ui.customer.MapScreen
 import com.example.deliveryapp.viewmodels.GraphViewModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
+
 //import com.mapbox.geojson.Point
 //import com.mapbox.maps.extension.compose.MapboxMap
 //import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
@@ -109,22 +112,23 @@ fun CustomerNavGraph(navController: NavHostController, graphViewModel: GraphView
         composable("customerActionScreen") { CustomerActionScreen(navController, graphData.toString()) }
 
         composable(
-            "checkOrder/{pickupLocation}/{deliveryLocation}",
+            "checkOrder/{orderJson}",
             arguments = listOf(
-                navArgument("pickupLocation") { type = NavType.StringType },
-                navArgument("deliveryLocation") { type = NavType.StringType }
+                navArgument("orderJson") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val pickupLocation = backStackEntry.arguments?.getString("pickupLocation")
-            val deliveryLocation = backStackEntry.arguments?.getString("deliveryLocation")
-            requireNotNull(pickupLocation)
-            requireNotNull(deliveryLocation)
+            val orderJson = backStackEntry.arguments?.getString("orderJson")
+            requireNotNull(orderJson)
+
+            // Deserialize JSON thành đối tượng Order
+            val order = Gson().fromJson(orderJson, Order::class.java)
+
             CustomerCheckOrderScreen(
                 navController = navController,
-                pickupLocation = pickupLocation,
-                deliveryLocation = deliveryLocation,
+                order = order
             )
         }
+
 
         composable("addOrderInfo") { CustomerAddOrderInformationScreen(navController = navController, customerID = graphData.toString()) }
 

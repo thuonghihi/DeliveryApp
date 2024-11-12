@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,14 +19,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -40,6 +46,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,32 +56,46 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.driver.R
 import com.example.driver.data.models.Driver
+import com.example.driver.data.models.Location
+import com.example.driver.data.models.Order
 import com.example.driver.data.repositories.DriverRepository
+import com.example.driver.data.repositories.OrderRepository
+import com.example.driver.ui.authentication.LeadingBasicButton
 import com.example.driver.ui.authentication.LoginScreen
 import com.example.driver.viewmodel.DriverViewModel
+import com.example.driver.viewmodel.OrderViewModel
+import com.mapbox.maps.extension.style.expressions.dsl.generated.pi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DriverHomeScreen(driverId: String){
     var openDialog by remember { mutableStateOf(false) }
     val driverRepository = DriverRepository()
     val driverViewModel = DriverViewModel(driverRepository)
+    val orderRepository = OrderRepository()
+    val orderViewModel = OrderViewModel(orderRepository)
     val active by driverViewModel.status.observeAsState()
     val auto by driverViewModel.auto.observeAsState()
+    val orders by orderViewModel.orders.collectAsState()
     driverViewModel.getStatus(driverId)
     driverViewModel.getAuto(driverId)
     var checkStatus by remember { mutableStateOf(true) }
     var checkAuto by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    var openBottomSheet by remember { mutableStateOf(false) }
     LaunchedEffect (checkStatus) {
         driverViewModel.getStatus(driverId)
     }
     LaunchedEffect (checkAuto) {
         driverViewModel.getAuto(driverId)
     }
-//    val active by remember { derivedStateOf { status } }
+    LaunchedEffect(Unit) {
+        orderViewModel.getOrderByDriverIdAndStatus(driverId, "assigned")
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -107,6 +129,28 @@ fun DriverHomeScreen(driverId: String){
             Row {
                 Icon(painter = painterResource(R.drawable.shutdown_icon), "", modifier = Modifier.size(20.dp))
                 Text(" Bật/Tắt")
+            }
+        }
+        Log.d("Orders", orders.toString())
+        if (orders != null){
+            val order = orders!!.firstOrNull()
+            Log.d("order", order.toString())
+            if (order != null){
+                openBottomSheet = true
+                if (openBottomSheet) {
+                    BottomSheetHasOrder(
+                        sheetState,
+                        "Đến điểm lấy hàng",
+                        "Đã đến điểm lấy hàng",
+                        order,
+                        { openBottomSheet = false
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    openBottomSheet = false
+                                }
+                            }
+                        }) {}
+                }
             }
         }
         if (openDialog) {
@@ -220,3 +264,69 @@ fun DialogOnline(onDismiss: () -> Unit, active: Boolean, auto: Boolean, onlineCh
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheetHasOrder(sheetState: SheetState, title: String, work: String, order: Order, onDismiss: () -> Unit, onClick: () -> Unit){
+    val scope = rememberCoroutineScope()
+    ModalBottomSheet(
+        onDismissRequest = { onDismiss },
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(title, style = TextStyle(color = Color(0xFFFC8D03), fontWeight = FontWeight.Medium))
+            Spacer(Modifier.fillMaxWidth().padding(vertical = 15.dp).height(0.8.dp).background(Color.LightGray))
+            Row (Modifier.fillMaxWidth().padding(top = 10.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.Top) {
+                Image(painter = painterResource(R.drawable.location_icon), " ", Modifier.padding(end = 15.dp).size(18.dp))
+                Column {
+                    Text(if (work == "Đã đến điểm lấy hàng") order.pickupAddress ?: "" else order.deliveryAddress ?: "",
+                        style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 17.sp)
+                    )
+                    if (work == "Xác nhận giao hàng") Text(order.note ?: "")
+                }
+            }
+            Row (Modifier.fillMaxWidth().padding(top = 28.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.Top) {
+                Image(painter = painterResource(R.drawable.user_icon), " ", Modifier.padding(end = 15.dp).size(18.dp))
+                Column {
+                    Text(
+                        if (work == "Đã đến điểm lấy hàng") order.senderName
+                            ?: "" else order.receiverName ?: "",
+                        style = TextStyle(fontWeight = FontWeight.Medium), fontSize = 17.sp)
+                    Text(
+                        if (work == "Đến điểm lấy hàng") {
+                            if (order.paymentRecipient == true) "Thu người gửi: 0đ"
+                            else "Thu người gửi: ${order.totalAmount}"
+                        } else {
+                            if (order.paymentRecipient == false) "Thu người nhận: 0đ"
+                            else "Thu người nhận: ${order.totalAmount}"
+                        }, style = TextStyle(Color.Gray),
+                        modifier = Modifier.padding(top = 5.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.fillMaxWidth().padding(top = 15.dp).height(0.5.dp).background(Color.LightGray))
+            Row (Modifier.fillMaxWidth().padding(top = 15.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically)
+            {
+                ActionInBottomSheet(R.drawable.phone_icon, "Gọi điện thoại")
+                Spacer(Modifier.width(1.dp).height(22.dp).background(Color.LightGray))
+                ActionInBottomSheet(R.drawable.more_icon, "Xem chi tiết")
+            }
+            LeadingBasicButton(work) { onClick }
+        }
+    }
+}
+
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun BottmSheetPreview() {
+//    BottomSheetHasOrder("Đến điểm lấy hàng", "Đã đến điểm lấy hàng", order)
+//}

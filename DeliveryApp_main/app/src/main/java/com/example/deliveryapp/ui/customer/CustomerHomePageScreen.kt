@@ -192,7 +192,7 @@ fun CustomerHomepageItemWithOrder(orderTrackingItem: Order, modifier: Modifier =
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                text = "Mã đơn hàng: ${orderTrackingItem.orderidshow}",
+                text = "Mã đơn hàng: ${orderTrackingItem.orderIdShow}",
                 style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
                 modifier = Modifier.padding(vertical = 15.dp)
             )
@@ -207,7 +207,7 @@ fun CustomerHomepageItemWithOrder(orderTrackingItem: Order, modifier: Modifier =
             OrderTrackingItemColumn(
                 iconResId = R.drawable.box_out,
                 title = "Địa chỉ gửi",
-                content = orderTrackingItem.pickupLocation ?: "",
+                content = orderTrackingItem.pickupAddress ?: "",
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -226,7 +226,7 @@ fun CustomerHomepageItemWithOrder(orderTrackingItem: Order, modifier: Modifier =
             OrderTrackingItemColumn(
                 iconResId = R.drawable.box_in,
                 title = "Địa chỉ nhận",
-                content = orderTrackingItem.deliveryLocation ?: "",
+                content = orderTrackingItem.deliveryAddress ?: "",
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -312,7 +312,7 @@ fun BottomSheetContent(orderTrackingItem: Order, customerID: String){
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium)
         Text(
-            text = "Mã đơn hàng: ${orderTrackingItem.orderidshow}",
+            text = "Mã đơn hàng: ${orderTrackingItem.orderIdShow}",
             style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
             modifier = Modifier.padding(vertical = 15.dp)
         )
@@ -323,13 +323,13 @@ fun BottomSheetContent(orderTrackingItem: Order, customerID: String){
             OrderTrackingDetailItemColumn(
                 iconResId = R.drawable.box_out,
                 title = "Địa chỉ gửi",
-                content = orderTrackingItem.pickupLocation ?: ""
+                content = orderTrackingItem.pickupAddress ?: ""
             )
             //    Spacer(modifier = Modifier.weight(1f))
             OrderTrackingDetailItemColumn(
                 iconResId = R.drawable.box_in,
                 title = "Địa chỉ nhận",
-                content = orderTrackingItem.deliveryLocation ?: ""
+                content = orderTrackingItem.deliveryAddress ?: ""
             )
         }
         Spacer(modifier = Modifier

@@ -1,6 +1,6 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.deliveryapp.data.repositorys.AuthRepository
+import com.example.deliveryapp.data.repositories.AuthRepository
 import com.example.deliveryapp.viewmodels.AuthViewModel
 
 class AuthViewModelFactory(private val repository: AuthRepository) : ViewModelProvider.Factory {

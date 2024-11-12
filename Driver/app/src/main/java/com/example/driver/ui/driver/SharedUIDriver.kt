@@ -5,12 +5,25 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.driver.R
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.extension.compose.MapEffect
@@ -84,3 +97,16 @@ fun MapScreen(context: Context) {
     }
 }
 
+@Composable
+fun ActionInBottomSheet(imageRes: Int, note: String){
+    Column (horizontalAlignment = Alignment.CenterHorizontally){
+        Image(painter = painterResource(imageRes), "", Modifier.size(20.dp).padding(bottom = 5.dp))
+        Text(note, style = TextStyle(fontSize = 13.sp, color = Color.DarkGray))
+    }
+}
+
+@Preview
+@Composable
+fun ActionInBottomSheetPreview() {
+    ActionInBottomSheet(R.drawable.home_outlined, "Giao hàng")
+}
