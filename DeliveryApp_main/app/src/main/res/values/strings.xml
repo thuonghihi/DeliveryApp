@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DeliveyApp</string>
+    <string name="access_token" translatable="false">pk.eyJ1IjoibmdvdGh1b25nIiwiYSI6ImNtMmtuc3o4cjAyeDEyaXJ6bGM2MXVjOXMifQ.HTqxYVSdVUatBn0zEEgsDA</string>
+</resources>
